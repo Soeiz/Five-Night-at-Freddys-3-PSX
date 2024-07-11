@@ -1,5 +1,6 @@
 #include <sys/types.h>
 #include <stdio.h>
+#include <stdbool.h>
 
 #include <libgte.h>
 #include <libetc.h>
@@ -37,7 +38,7 @@ int CDreadResult = 0;
 CVECTOR fntColorBG = { 0, 0, 0 };
 CVECTOR fntColor = { 255, 255, 255 };
 
-#define FONTX   960
+#define FONTX   992
 #define FONTY   0
 
 #define TRUECOL 1               // 0 : 16bpp, 1: 24bpp
@@ -57,7 +58,7 @@ DRAWENV draw[2];
 short db = 0;                      // index of which buffer is used, values 0, 1
 
 // Number of VAG files to load
-#define VAG_NBR 19
+#define VAG_NBR 21
 #define MALLOC_MAX VAG_NBR            // Max number of time we can call SpuMalloc
 
 // convert Little endian to Big endian
@@ -99,30 +100,38 @@ int Ran(int max)
     return 0;
 }
 
+void clearVRAMmaintenancepanel(void) {
+    RECT rectTL;
+
+    setRECT(&rectTL, 980, 49, 44, 140);  
+    ClearImage2(&rectTL, 0, 0, 0);
+    DrawSync(0);
+}
+
 void clearVRAMMenu(void)
 {
     RECT rectTL;
-    setRECT(&rectTL, 700, 0, 260, 513); 
+    setRECT(&rectTL, 384, 0, 256, 513); 
     ClearImage2(&rectTL, 0, 0, 0);
-    setRECT(&rectTL, 512, 0, 128, 256); 
+    setRECT(&rectTL, 640, 0, 256, 256); 
     ClearImage2(&rectTL, 0, 0, 0);
     DrawSync(0);
 }
 
 void clearVRAMloading(void)
-{
+{/*
     RECT rectTL;
     setRECT(&rectTL, 832, 256, 64, 128); 
     ClearImage2(&rectTL, 0, 0, 0);
-    DrawSync(0);
+    DrawSync(0);*/
 }
 
 void clearVRAMScreamer(void)
-{
+{/*
     RECT rectTL;
     setRECT(&rectTL, 576, 256, 106, 175); 
     ClearImage2(&rectTL, 0, 0, 0);
-    DrawSync(0);
+    DrawSync(0);*/
 }
 
 void clearVRAM(void)
@@ -135,13 +144,7 @@ void clearVRAM(void)
     DrawSync(0);
 }
 
-void clearVRAMhallway(void)
-{
-    RECT rectTL;
-    setRECT(&rectTL, 320, 0, 64, 0);
-    ClearImage2(&rectTL, 0, 0, 0);
-    DrawSync(0);
-}
+#define CURCAMNAME_MAXLEN 16
 
 int initstuff = 0;
 
@@ -155,7 +158,6 @@ int helpwantedposter = 0;
 int maincustomnightmenu = 0;
 int AISetmenu = 0;
 int timermenu = 0;
-int advancedmenu = 0;
 int freddyfacechanged = 0;
 
 int freddylocationframelock = 300;
@@ -313,43 +315,16 @@ int puppetlocation = 0;
 int puppetlocationframe = 60;
 int musicangerframe = 0;
 
-int musicboxunwidingvalue = 2;
-int musicboxunwidingvaludemi = 0;
-int musicboxunwidingvaluthird = -2;
-int musicboxtimer = 2000;
-int ismusicboxatzero = 0;
-int dangerlevel = 0;
-
-int windingframessound = 0; //30
-int windingframe = 1;
-int toychicaHere = 0;
-int toybonnieHere = 0;
 int mangleHere = 0;
 int BBHere = 0;
 
 int triggeralarm = 0;
-
-int side = 0; //0 is left, 1 is right
-int jamlight = 0;
-int jamlightframes = 0;
-int cantlight = 0;
-int cantlightR = 0;
-int cantlightL = 0;
-
-int ismaskon = 0;
-int masklimiter = 0;
-int maskcooldown = 30;
-
-int light1 = 0;
-int light2 = 0;
-int lighthall = 0;
-int issomeonehall = 0;
-int lightframe = 0;
+int alarmcooldown = 30;
+int officefadingout = 0;
+int officefadingoutminus = 0;
+int oneway = 0; //NO WAY
 
 int camlimiter = 0;
-int limiter2 = 0;
-int limiterhall = 0;
-int limiter3 = 0;
 int limiterbop = 0;
 
 int camera = 0;
@@ -360,23 +335,21 @@ int limitercameraD = 0;
 int limitercameraU = 0;
 int limitercameraR = 0;
 int limitercameraL = 0;
+
+int isfreddyofficehere = true;
+
+bool maintenancepanel = false;
+int maintenancepanelselection = 0;
+int reloadingframe = 0;
+int timerepairing = 0;
+int limiterpanel = 0;
+int spritemaintenancepanelgo = false;
+int spritemaintenancepanel = 0;
+int spritesheetpanel = 4;
+
 int animatronicscamera[] = {0,0,0,0,0,0,0,0,0}; //freddy, bonnie, chica, foxy, toy freddy, toy bonnie, toy chica, mangle, BB
 
-int flashlightbattery = 3000;
-int flashlightbatteryfixed = 3000;
-int batterypublic = 3;
-
-int officequeue[5] = {0,0,0,0,0}; // only 5 members can attack on front of you. WARNING 0 is 1, 1 is 2 etc (for animatronics)
-int officequeuetimer = 0;
-int occupiedoncam = 360;
-
-int animatronicsoffice[] = {0,0,0,0,0,0,0,0,0}; //freddy, bonnie, chica, foxy, toy freddy, toy bonnie, toy chica, mangle, BB
-int animatronicshallway[] = {0,0,0,0,0,0,0}; //Freddy, bonnie, foxy, toy freddy, toy chica, mangle, GF
-
 int blinkicon = 0;
-
-int checkframes = 0;
-int checklifelimit = 0;
 
 int weirdnight = 0;
 int fadeoffice = 128;
@@ -423,7 +396,6 @@ int screamerframes = 47;
 int deadtoybonnie = 0;
 int dead = 0;
 int deadfrom = 0;
-int GFscaling = 1024;
 int spriteframes = 4;
 int spriteframesconst = 4;
 int spritesheet = 0;
@@ -457,3 +429,4 @@ char primbuff[2][32768];     // double primitive buffer of length 32768 * 8 =  2
 char *nextpri = primbuff[0];       // pointer to the next primitive in primbuff. Initially, points to the first bit of primbuff[0]
 
 #define COUNT_OF(x) (sizeof(x) / sizeof(0[x]))
+

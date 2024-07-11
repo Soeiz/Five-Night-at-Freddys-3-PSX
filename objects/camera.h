@@ -406,17 +406,6 @@ void cameraloc(void) {
             SpuSetKey(SPU_ON, SPU_03CH);
             limitercameraL = 1;
         }
-        if (pad & PADRleft || pad >> 16 & PADRleft && twoplayermode == 1) { 
-            if (windingframessound == 0) {
-                SpuSetKey(SPU_ON, SPU_14CH);
-                windingframessound = 30;
-            }   
-            if (musicboxtimer < 2000) {
-                musicboxtimer = musicboxtimer + 7;
-            } else {
-                musicboxtimer = 2000;
-            }
-        }
     }
 
     if (curcam[0] == '1' && curcam[1] == '2') {  

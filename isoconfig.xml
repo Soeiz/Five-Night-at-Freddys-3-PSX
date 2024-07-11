@@ -86,37 +86,48 @@
             <file name="SCES_313.37"   type="data" source="fnaf3.ps-exe"/>
             <file name="INTER8.XA" type="xa" source="xa/inter8.xa"/>
             <!--Put all of the tim shit we need -->
+            <!--<file name="OFFICE1.TIM"   type="data" source="tim/office/OFFICE1.TIM"/>
+            <file name="OFFICE2.TIM"   type="data" source="tim/office/OFFICE2.TIM"/> -->
+
             <file name="MENUS1.TIM"   type="data" source="tim/titlemenu/MENU1.TIM"/>
             <file name="MENUS2.TIM"   type="data" source="tim/titlemenu/MENU2.TIM"/>
             <file name="MENUS3.TIM"   type="data" source="tim/titlemenu/MENU3.TIM"/>
             <file name="MENUS4.TIM"   type="data" source="tim/titlemenu/MENU4.TIM"/>
             <file name="MENUS5.TIM"   type="data" source="tim/titlemenu/MENU5.TIM"/>
             <file name="STATIC.TIM"   type="data" source="tim/titlemenu/STATIC.TIM"/>
-            <file name="NEWGAME.TIM"   type="data" source="tim/titlemenu/NEWGAME.TIM"/>
-            <file name="LOADGAME.TIM"   type="data" source="tim/titlemenu/LOADGAME.TIM"/>
-            <file name="EXTRA.TIM"   type="data" source="tim/titlemenu/EXTRA.TIM"/>
-            <file name="SLTBUT.TIM"   type="data" source="tim/titlemenu/SLTBUT.TIM"/>
-            <file name="LOAD.TIM"   type="data" source="tim/LOAD.TIM"/>
-            <file name="HWANTED.TIM"   type="data" source="tim/titlemenu/HWANTED.TIM"/>
-            <file name="OLEFTP1.TIM"   type="data" source="tim/office/oLEFTpart1.TIM"/>
-            <file name="ORIGHTP1.TIM"   type="data" source="tim/office/oRIGHTpart1.TIM"/>
-            <file name="LAYOUT.TIM"   type="data" source="tim/office/LAYOUT.TIM"/>
-            <file name="TCENTER.TIM"   type="data" source="tim/office/TCENTER.TIM"/>
-            <file name="TRIGHT.TIM"   type="data" source="tim/office/TABLERIGHT.TIM"/>
-            <file name="TLEFT.TIM"   type="data" source="tim/office/TABLELEFT.TIM"/>
-            <file name="BB.TIM"   type="data" source="tim/office/BB.TIM"/>
-            <file name="GF.TIM"   type="data" source="tim/office/GF.TIM"/>
-            <file name="OLTCHIC.TIM"   type="data" source="tim/office/officeLEFTlighttoychica.TIM"/>
-            <file name="OLTBB.TIM"   type="data" source="tim/office/officeLEFTlightballonboy.TIM"/>
-            <file name="ORTBON.TIM"   type="data" source="tim/office/officeRIGHTlighttoybonnie.TIM"/>
-            <file name="ORTMAN.TIM"   type="data" source="tim/office/officeRIGHTlightmangle.TIM"/>
-            <file name="MASK.TIM"   type="data" source="tim/office/MASK.TIM"/>
-            <file name="GJFIV.TIM"   type="data" source="tim/GJFIV.TIM"/>
-            <file name="GAMEOVER.TIM"   type="data" source="tim/GAMEOVER.TIM"/>
-            <file name="GOL.TIM"   type="data" source="tim/GOL.TIM"/>
-            <file name="GOLF.TIM"   type="data" source="tim/GOLF.TIM"/>
+            <file name="HWANTED.TIM"   type="data" source="tim/titlemenu/HWANTED.TIM"/>     
+
             <file name="FAM.TIM"   type="data" source="tim/5am6/FAM.TIM"/>
-            <file name="NAME.TIM"   type="data" source="tim/titlemenu/name.TIM"/>
+
+            <file name="2NDLYR1.TIM"   type="data" source="tim/office/2NDLAYER1.TIM"/>
+            <file name="2NDLYR2.TIM"   type="data" source="tim/office/2NDLAYER2.TIM"/>
+            <file name="OFFICE.TIM"   type="data" source="tim/office/OFFICE.TIM"/>
+            <file name="LAYOUT.TIM"   type="data" source="tim/office/LAYOUT.TIM"/>
+
+            <file name="CAM-01.TIM"   type="data" source="tim/camera/cams/map/01/CAM.TIM"/>
+
+            <file name="CAM-02.TIM"   type="data" source="tim/camera/cams/map/02/CAM.TIM"/>
+
+            <file name="CAM-03.TIM"   type="data" source="tim/camera/cams/map/03/CAM.TIM"/>
+
+            <file name="CAM-04.TIM"   type="data" source="tim/camera/cams/map/04/CAM.TIM"/>
+
+            <file name="CAM-05.TIM"   type="data" source="tim/camera/cams/map/05/CAM.TIM"/>
+
+            <file name="CAM-06.TIM"   type="data" source="tim/camera/cams/map/06/CAM.TIM"/>
+
+            <file name="CAM-07.TIM"   type="data" source="tim/camera/cams/map/07/CAM.TIM"/>
+
+            <file name="CAM-08.TIM"   type="data" source="tim/camera/cams/map/08/CAM.TIM"/>
+
+            <file name="CAM-09.TIM"   type="data" source="tim/camera/cams/map/09/CAM.TIM"/>
+
+            <file name="CAM-10.TIM"   type="data" source="tim/camera/cams/map/10/CAM.TIM"/>
+
+
+            <file name="GJFIV.TIM"   type="data" source="tim/GJFIV.TIM"/>
+            <file name="LOAD.TIM"   type="data" source="tim/LOAD.TIM"/>
+            <file name="GAMEOVER.TIM"   type="data" source="tim/GAMEOVER.TIM"/>
 
             <dummy sectors="1024"/>
             
