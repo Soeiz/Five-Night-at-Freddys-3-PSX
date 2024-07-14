@@ -335,8 +335,9 @@ int limitercameraD = 0;
 int limitercameraU = 0;
 int limitercameraR = 0;
 int limitercameraL = 0;
+int springtraponcam = false;
 
-int isfreddyofficehere = true;
+int isfreddyofficehere = false;
 
 bool maintenancepanel = false;
 int maintenancepanelselection = 0;

@@ -27,10 +27,14 @@ tim/office/panelsprite/PANEL0.tim \
 tim/office/panelsprite/PANEL1.tim \
 tim/office/panelsprite/PANEL2.tim \
 tim/office/panelsprite/PANEL3.tim \
+tim/office/panelsprite/PANEL4.tim \
+tim/office/panelsprite/PANEL5.tim \
+tim/camera/panel/8.tim \
 tim/office/FREDDYWANDERING.tim \
+tim/office/mangle.tim \
 tim/Mpanel/AUDEVICE.tim \
 tim/Mpanel/CAMSYS.tim \
-tim/Mpanel/console.tim \
+tim/Mpanel/selection.tim \
 tim/Mpanel/error.tim \
 tim/Mpanel/EXIT.tim \
 tim/Mpanel/Loadco.tim \

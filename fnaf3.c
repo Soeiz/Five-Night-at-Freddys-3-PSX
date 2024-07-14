@@ -142,7 +142,7 @@ XAbank soundBank = {
             // id   size   file  channel start end cursor
             {   0,  1768352,   1,     5,     0,   6048,  -1 }, //Menu.xa
             {   1,  602688,   1,     5,     7544,   9600,  -1 }, //Beginning of the night.xa
-            {   2,  602688,   1,     5,     7544,   9600,  -1 }, //ambiance1.xa
+            {   2,  602688,   1,     5,     11096,   9600,  -1 }, //ambiance1.xa
             // channel 6                 
             {   3,  488224,   1,     6 ,   0,   1664, -1  }, //6am.xa
             {   4,  7127136,   1,     6 ,   3160, 27560, -1  }, //Phone Dude Night 1.xa
@@ -383,16 +383,23 @@ void setRGBALL(int red, int green, int blue, int reason) {
         setRGB0(poly2ndlayer2, red, green, blue);  
         if (red > 100) {
             setRGB0(polyspringtrapoffice1, red - 20, green - 20, blue - 20);  
-            setRGB0(polymaintenance_sprite,red - 20, green - 20, blue - 20);
+            if (spritemaintenancepanel > 0) {setRGB0(polymaintenance_sprite,red - 20, green - 20, blue - 20);}
         } else {
             setRGB0(polyspringtrapoffice1, red, green, blue);  
-            setRGB0(polymaintenance_sprite,red,green,blue);
+            if (spritemaintenancepanel > 0) {setRGB0(polymaintenance_sprite,red,green,blue);}
         }
+        setRGB0(polysfreddyoffice, red, green, blue);
         setRGB0(polyspringtrapoffice2, red, green, blue);
+
+        setRGB0(polylayout,red,green,blue);
 
         setRGB0(polymaintenance_camsys,red,green,blue);
         setRGB0(polymaintenance_audevice,red,green,blue);
         setRGB0(polymaintenance_loadco,red,green,blue);
+        setRGB0(polymaintenance_selection,red,green,blue);
+        setRGB0(polymaintenance_ventil ,red,green,blue);
+        setRGB0(polymaintenance_reboot,red,green,blue);
+        setRGB0(polymaintenance_exit,red,green,blue);
         setRGB0(polymaintenance_text,red,green,blue);
         setRGB0(polymaintenance_text2,red,green,blue);
         setRGB0(polymaintenance_text3,red,green,blue);
@@ -739,7 +746,7 @@ int main(void) {
                 LoadTexture(_binary_tim_office_panelsprite_PANEL0_tim_start, &panel); 
                 LoadTexture(_binary_tim_Mpanel_AUDEVICE_tim_start, &maintenance_audevice); 
                 LoadTexture(_binary_tim_Mpanel_CAMSYS_tim_start, &maintenance_camsys); 
-                //LoadTexture(_binary_tim_Mpanel_console_tim_start, &maintenance_console); 
+                LoadTexture(_binary_tim_Mpanel_selection_tim_start, &maintenance_selection); 
                 LoadTexture(_binary_tim_Mpanel_error_tim_start, &maintenance_error); 
                 LoadTexture(_binary_tim_Mpanel_EXIT_tim_start, &maintenance_exit); 
                 LoadTexture(_binary_tim_Mpanel_Loadco_tim_start, &maintenance_loadco); 
@@ -748,6 +755,7 @@ int main(void) {
                 LoadTexture(_binary_tim_Mpanel_RESTART_tim_start, &maintenance_text); 
                 LoadTexture(_binary_tim_Mpanel_VENTIL_tim_start, &maintenance_ventil); 
 
+                LoadTexture(_binary_tim_office_mangle_tim_start, &mangle); 
                 LoadTexture(_binary_tim_office_FREDDYWANDERING_tim_start, &freddyoffice); 
                 LoadTexture(_binary_tim_office_SPRINGTRAP1_tim_start, &springtrapoffice1); 
                 LoadTexture(_binary_tim_office_SPRINGTRAP2_tim_start, &springtrapoffice2); 
@@ -874,6 +882,16 @@ int main(void) {
                     //Here we go, loading all the cameras of the game...
                     //150 KB for the map, 60 for the vent.
 
+                    loadFile = "\\2NDLYR.TIM;1";
+                    CdSearchFile( &filePos, loadFile);
+                    dataBuffer = malloc( BtoS(filePos.size) * CD_SECTOR_SIZE );
+                    CdControl(CdlSetloc, (u_char *)&filePos.pos, CtrlResult);
+                    // Read data and load it to dataBuffer
+                    CDreadOK = CdRead( (int)BtoS(filePos.size), (u_long *)dataBuffer, CdlModeSpeed );
+                    CDreadResult = CdReadSync(0, 0);
+                    LoadTexture(dataBuffer, &officeRIGHT); 
+                    free(dataBuffer);
+
                     loadFile = "\\CAM-01.TIM;1";
                     CdSearchFile( &filePos, loadFile);
                     dataBuffer = malloc( BtoS(filePos.size) * CD_SECTOR_SIZE );
@@ -974,15 +992,7 @@ int main(void) {
                     LoadTexture(dataBuffer, &cam10); 
                     free(dataBuffer);
 
-                    loadFile = "\\2NDLYR2.TIM;1";
-                    CdSearchFile( &filePos, loadFile);
-                    dataBuffer = malloc( BtoS(filePos.size) * CD_SECTOR_SIZE );
-                    CdControl(CdlSetloc, (u_char *)&filePos.pos, CtrlResult);
-                    // Read data and load it to dataBuffer
-                    CDreadOK = CdRead( (int)BtoS(filePos.size), (u_long *)dataBuffer, CdlModeSpeed );
-                    CDreadResult = CdReadSync(0, 0);
-                    LoadTexture(dataBuffer, &officeRIGHT); 
-                    free(dataBuffer);
+                    LoadTexture(_binary_tim_camera_panel_8_tim_start, &campanel); 
                 }
             } 
             if (loadingframe == 636) {
@@ -1143,6 +1153,7 @@ int main(void) {
                 CdControlF(CdlPause,0);
                 phoneguytalking = 0;
                 enablephoneguy = 0;
+                sample = 0;
               }
             }
             if (noisefootstep == 1) {
@@ -1320,16 +1331,23 @@ int main(void) {
             }
 
             if (maintenancepanel == true) {
-                makepoly(7);
                 if (spritemaintenancepanelgo == true && spritemaintenancepanel < 6) {
 
-                    if (spritesheet == 1) {
+                    if (spritesheet == 0) {
                         switch(spritemaintenancepanel) {
                             case 0:
                                 clearVRAMmaintenancepanel();
-                                LoadTexture(_binary_tim_office_panelsprite_PANEL3_tim_start, &panel);
+                                LoadTexture(_binary_tim_office_panelsprite_PANEL5_tim_start, &panel);
+                            break;
+                            case 1:
+                                clearVRAMmaintenancepanel();
+                                LoadTexture(_binary_tim_office_panelsprite_PANEL4_tim_start, &panel);
                             break;
                             case 2:
+                                clearVRAMmaintenancepanel();
+                                LoadTexture(_binary_tim_office_panelsprite_PANEL3_tim_start, &panel);
+                            break;
+                            case 3:
                                 clearVRAMmaintenancepanel();
                                 LoadTexture(_binary_tim_office_panelsprite_PANEL2_tim_start, &panel);
                             break;
@@ -1337,19 +1355,16 @@ int main(void) {
                                 clearVRAMmaintenancepanel();
                                 LoadTexture(_binary_tim_office_panelsprite_PANEL1_tim_start, &panel);
                             break;
-                            case 6:
+                            case 5:
                                 LoadTexture(_binary_tim_office_panelsprite_PANEL0_tim_start, &panel);
                                 spritemaintenancepanelgo = false;
                             break;
                         } 
-
-                    }     
-
+                    }    
                     if (spritesheetpanel != 0) {spritesheetpanel--;} else {spritesheetpanel = 4; spritemaintenancepanel++;}
-
                 }
 
-                if (spritemaintenancepanel == 6) {
+                if (spritemaintenancepanel == 5) {
                     if ((pad & PADLdown || pad >> 16 & PADLdown && twoplayermode == 1) && timerepairing == 0 && limiterpanel == 0) {
                         if (maintenancepanelselection < 4) {
                             maintenancepanelselection++;
@@ -1387,29 +1402,35 @@ int main(void) {
 
                             case 2:
                                 timerepairing = 300; // 5 seconds
-                                MovVectormaintenance_loadco.vy = -2;
+                                MovVectormaintenance_loadco.vy = 13;
                             break; 
 
                             case 3:
                                 timerepairing = 540; // 9 seconds
-                                MovVectormaintenance_loadco.vy = 14;
+                                MovVectormaintenance_loadco.vy = 29;
                             break; 
 
                             case 4:
                                 maintenancepanel = false;
+                                SpuSetKey(SPU_ON, SPU_20CH);
                             break; 
                         } 
                     }
                 }
             }
-            if (maintenancepanel == false && spritemaintenancepanelgo == true) {
+            if (maintenancepanel == false && spritemaintenancepanel != 0) {
 
                 if (spritesheet == 0) {
                     switch(spritemaintenancepanel) {
-                        case 0:
-                            spritemaintenancepanelgo = false;
+                        case 1:
+                            clearVRAMmaintenancepanel();
+                            LoadTexture(_binary_tim_office_panelsprite_PANEL5_tim_start, &panel);
                         break;
                         case 2:
+                            clearVRAMmaintenancepanel();
+                            LoadTexture(_binary_tim_office_panelsprite_PANEL4_tim_start, &panel);
+                        break;
+                        case 3:
                             clearVRAMmaintenancepanel();
                             LoadTexture(_binary_tim_office_panelsprite_PANEL3_tim_start, &panel);
                         break;
@@ -1417,7 +1438,7 @@ int main(void) {
                             clearVRAMmaintenancepanel();
                             LoadTexture(_binary_tim_office_panelsprite_PANEL2_tim_start, &panel);
                         break;
-                        case 6:
+                        case 5:
                             clearVRAMmaintenancepanel();
                             LoadTexture(_binary_tim_office_panelsprite_PANEL1_tim_start, &panel);
                         break;
@@ -1425,7 +1446,6 @@ int main(void) {
                 }
 
                 if (spritesheetpanel != 0 && spritemaintenancepanel != 1) {spritesheetpanel--;} else {spritesheetpanel = 4; spritemaintenancepanel--;}
-
             }
 
             if (timerepairing > 0) {timerepairing--;}
@@ -1433,87 +1453,33 @@ int main(void) {
             if (timerepairing % 60 == 0 && timerepairing > 0) {SpuSetKey(SPU_ON, SPU_18CH);}
             if (timerepairing % 30 == 0) {if (reloadingframe < 4) {reloadingframe++;} else {reloadingframe = 0;}}
 
-            if (camera == 0) {
-                makepoly(6);
 
-                if (dead == 0 && fivetosixamframes == 0 && maintenancepanel == false) {
+            if (spritemaintenancepanel > 0) {makepoly(7);}
+            
+            makepoly(6);
 
-                    if (pad & PADRdown || pad >> 16 & PADRdown && twoplayermode == 1) {speedoffice = 6;} else {speedoffice = 3;}
+            if (dead == 0 && fivetosixamframes == 0 && maintenancepanel == false) {
 
+                if (pad & PADRdown || pad >> 16 & PADRdown && twoplayermode == 1) {speedoffice = 6;} else {speedoffice = 3;}
+
+                if (camera == 0) {
                     if(pad & PADLleft || pad >> 16 & PADLleft && twoplayermode == 1) {
                         if (MovVectorofficemiddle.vx < 100) {
                             MovVectorofficemiddle.vx = MovVectorofficemiddle.vx + speedoffice;
+                            MovVectorfreddyoffice.vx = MovVectorfreddyoffice.vx + speedoffice;
+                        } else {
+                            MovVectorofficemiddle.vx = 100;
                         }
                     } // left ;)
                     if(pad & PADLright || pad >> 16 & PADLright && twoplayermode == 1) {
                         if (MovVectorofficemiddle.vx > -50) {
                             MovVectorofficemiddle.vx = MovVectorofficemiddle.vx - speedoffice;
+                            MovVectorfreddyoffice.vx = MovVectorfreddyoffice.vx - speedoffice;
                         } else {
                             MovVectorofficemiddle.vx = -50;
                         }
                     } // right :) 
                 }
-            }
-            if (camera == 1) {     
-              if (fivetosixamframes == 0) {
-
-                  //camera's grey or green
-                  polycamgreyogreen = (POLY_F4 *)nextpri;     
-                          
-                  RotMatrix(&RotVectorpolycamgreyogreen, &PolyMatrixpolycamgreyogreen);    
-                  TransMatrix(&PolyMatrixpolycamgreyogreen, &MovVectorpolycamgreyogreen);
-                  ScaleMatrix(&PolyMatrixpolycamgreyogreen, &ScaleVectorpolycamgreyogreen);  
-                  
-                  SetRotMatrix(&PolyMatrixpolycamgreyogreen);            
-                  SetTransMatrix(&PolyMatrixpolycamgreyogreen);          
-                  
-                  setPolyF4(polycamgreyogreen);                          
-                  
-                  RotTransPers4(
-                              &VertPospolycamgreyogreen[0],      &VertPospolycamgreyogreen[1],      &VertPospolycamgreyogreen[2],      &VertPospolycamgreyogreen[3],
-                              (long*)&polycamgreyogreen->x0, (long*)&polycamgreyogreen->x1, (long*)&polycamgreyogreen->x2, (long*)&polycamgreyogreen->x3,
-                              &polydepth,
-                              &polyflag
-                              );                               
-
-                  addPrim(ot[db], polycamgreyogreen);        
-
-                  setRGB0(polycamgreyogreen, 157, 184, 3);    
-                  
-                  nextpri += sizeof(POLY_F4);                
-     
-                  //Layout                
-                  polylayout = (POLY_FT4 *)nextpri;              
-                          
-                  RotMatrix(&RotVectorlayout, &PolyMatrixlayout);
-                  TransMatrix(&PolyMatrixlayout, &MovVectorlayout);  
-                  ScaleMatrix(&PolyMatrixlayout, &ScaleVectorlayout);
-                  
-                  SetRotMatrix(&PolyMatrixlayout);                   
-                  SetTransMatrix(&PolyMatrixlayout);                 
-                  
-                  setPolyFT4(polylayout);                     
-                  setClut(polylayout,960,196);       
-                  
-                  polylayout->tpage = getTPage(layout.mode&0x3, 0, 640, 0); 
-                  
-                  if (fivetosixamframes == 0) {
-                    setRGB0(polylayout, 128, 128, 128);    
-                  }     
-                  
-                  RotTransPers4(
-                              &VertPoslayout[0],      &VertPoslayout[1],      &VertPoslayout[2],      &VertPoslayout[3],
-                              (long*)&polylayout->x0, (long*)&polylayout->x1, (long*)&polylayout->x2, (long*)&polylayout->x3,
-                              &polydepth,
-                              &polyflag
-                              );                               
-                  
-                  setUV4(polylayout, 0, 0, 0, 229, 229, 0, 229, 229);  
-                      
-                  addPrim(ot[db], polylayout);                  
-                  
-                  nextpri += sizeof(POLY_FT4);  
-                }  
             }
 
              if (blinkicon < 61) {blinkicon++;}
@@ -1636,6 +1602,8 @@ void resetgame(int hardreset) {
     fadeGF = 128;
 
     officefadingout = 1;
+
+    isfreddyofficehere = false;
   }
     if (enablephoneguystr[1] == 'N') {enablephoneguy = 1;}
 
@@ -1645,7 +1613,7 @@ void resetgame(int hardreset) {
 
     camera = 0;
     curcam[0] = '0';
-    curcam[1] = '9';
+    curcam[1] = '1';
 
     noisefootstep = 0;
     framenoisefootstep = 0;
@@ -1703,7 +1671,8 @@ void print(int number) {
         }
         FntPrint("\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n");  // For the text to go bottom LOL
 
-        FntPrint("%d AM \n, pos %d, console %d \n", AM, MovVectorofficemiddle.vx, spritemaintenancepanel);  // print time
+        //FntPrint("%d AM \n, pos %d, console %d \n", AM, MovVectorofficemiddle.vx, spritemaintenancepanel);  // print time
+        FntPrint("%d AM \n", AM);  // print time
         FntPrint("Night %d \n", night);
     }
     if (camera == 1 && number != 2) {
@@ -3116,7 +3085,12 @@ void controllerinput(void) {
     }
     if(!(pad & PADR1 || pad >> 16 & PADR1 && twoplayermode == 1)) {camlimiter = 0;}
 
-    if (pad & PADstart || pad >> 16 & PADstart && twoplayermode == 1) {returnframes++;}
+    if (pad & PADstart || pad >> 16 & PADstart && twoplayermode == 1) {
+        returnframes++;
+        if (pad & PADselect) {
+            triggeralarm = 1;
+        }
+    }
 
     if (!(pad & PADstart || pad >> 16 & PADstart && twoplayermode == 1)) {
         if (returnframes != 0) {
@@ -3370,7 +3344,6 @@ void consoleFunc(void) {
     maintenancepanel = !maintenancepanel; 
     spritemaintenancepanelgo = true;
     if (maintenancepanel) {
-        makepoly(7);
         SpuSetKey(SPU_ON, SPU_19CH);
     } else {
         SpuSetKey(SPU_ON, SPU_20CH);

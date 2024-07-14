@@ -99,7 +99,7 @@
 
             <file name="FAM.TIM"   type="data" source="tim/5am6/FAM.TIM"/>
 
-            <file name="2NDLYR1.TIM"   type="data" source="tim/office/2NDLAYER1.TIM"/>
+            <file name="2NDLYR.TIM"   type="data" source="tim/office/2NDLAYER.TIM"/>
             <file name="2NDLYR2.TIM"   type="data" source="tim/office/2NDLAYER2.TIM"/>
             <file name="OFFICE.TIM"   type="data" source="tim/office/OFFICE.TIM"/>
             <file name="LAYOUT.TIM"   type="data" source="tim/office/LAYOUT.TIM"/>
