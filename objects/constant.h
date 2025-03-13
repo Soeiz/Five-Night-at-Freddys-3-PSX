@@ -1,7 +1,9 @@
 #include <sys/types.h>
+#include <sys/file.h>
 #include <stdio.h>
 #include <stdbool.h>
 
+#include <kernel.h>
 #include <libgte.h>
 #include <libetc.h>
 #include <libgpu.h>
@@ -10,30 +12,11 @@
 #include <rand.h>
 #include <libapi.h>
 #include <string.h>
+#include <libmcrd.h>
+#include <libpress.h>
 
 #include <libcd.h>
 #include <malloc.h>
-
-#define BtoS(len) ( ( len + CD_SECTOR_SIZE - 1 ) / CD_SECTOR_SIZE ) 
-// Name of file to load
-static char * loadFile;
-// libcd's CD file structure contains size, location and filename
-CdlFILE filePos = {0};
-//~ struct EXEC * exeStruct;
-// Define start address of allocated memory
-// Let's use an array so we don't have to worry about using a memory segment that's already in use.
-static unsigned char ramAddr[0x40000]; // https://discord.com/channels/642647820683444236/663664210525290507/864936962199781387
-// We could also set a memory address manually, but we have to make sure this won't get in the way of other routines.
-// void * ramAddr = (void *)0x80030D40; 
-// Load data to this buffer
-u_long * dataBuffer;              
-// Those are not strictly needed, but we'll use them to see the commands results.
-// They could be replaced by a 0 in the various functions they're used with.
-u_char CtrlResult[8];
-// Value returned by CDread() - 1 is good, 0 is bad
-int CDreadOK = 0;
-// Value returned by CDsync() - Returns remaining sectors to load. 0 is good.
-int CDreadResult = 0;
 
 CVECTOR fntColorBG = { 0, 0, 0 };
 CVECTOR fntColor = { 255, 255, 255 };
@@ -58,7 +41,7 @@ DRAWENV draw[2];
 short db = 0;                      // index of which buffer is used, values 0, 1
 
 // Number of VAG files to load
-#define VAG_NBR 21
+#define VAG_NBR 24
 #define MALLOC_MAX VAG_NBR            // Max number of time we can call SpuMalloc
 
 // convert Little endian to Big endian
@@ -100,38 +83,21 @@ int Ran(int max)
     return 0;
 }
 
-void clearVRAMmaintenancepanel(void) {
-    RECT rectTL;
-
-    setRECT(&rectTL, 980, 49, 44, 140);  
-    ClearImage2(&rectTL, 0, 0, 0);
-    DrawSync(0);
-}
-
-void clearVRAMMenu(void)
+int RAN2;
+int Ran2(int max)
 {
+    RAN2 = (rand()%max);
+    if (RAN2 == 0) {RAN2++;}
+    return 0;
+}
+
+//X1 and Y1 are the positions, X2 and Y2 is the size of the rect.
+void clearVRAMgeneral(int x1, int y1, int x2, int y2) {
     RECT rectTL;
-    setRECT(&rectTL, 384, 0, 256, 513); 
-    ClearImage2(&rectTL, 0, 0, 0);
-    setRECT(&rectTL, 640, 0, 256, 256); 
+
+    setRECT(&rectTL, x1, y1, x2, y2);  
     ClearImage2(&rectTL, 0, 0, 0);
     DrawSync(0);
-}
-
-void clearVRAMloading(void)
-{/*
-    RECT rectTL;
-    setRECT(&rectTL, 832, 256, 64, 128); 
-    ClearImage2(&rectTL, 0, 0, 0);
-    DrawSync(0);*/
-}
-
-void clearVRAMScreamer(void)
-{/*
-    RECT rectTL;
-    setRECT(&rectTL, 576, 256, 106, 175); 
-    ClearImage2(&rectTL, 0, 0, 0);
-    DrawSync(0);*/
 }
 
 void clearVRAM(void)
@@ -144,7 +110,23 @@ void clearVRAM(void)
     DrawSync(0);
 }
 
-#define CURCAMNAME_MAXLEN 16
+int currentmenu[2] = {0,0};
+
+//First index, 1 Is main menu, 2 is extra menu, 3 is custom night menu.
+/*
+    second index (submenu) :
+
+    submenu in extra menu :
+
+    1 : unlocks menu
+    2 : Info screen
+
+    submenu in custom night menu :
+
+    1 : AI set menu
+    2 : timer menu
+    3 : Advanced menu
+*/
 
 int initstuff = 0;
 
@@ -154,25 +136,17 @@ int frames = 500;
 
 int menuscreeninit = 0;
 int menu = 0;
-int helpwantedposter = 0;
+bool helpwantedposter = false;
 int maincustomnightmenu = 0;
 int AISetmenu = 0;
 int timermenu = 0;
 int freddyfacechanged = 0;
 
-int freddylocationframelock = 300;
-int bonnielocationframelock = 300;
-int chicalocationframelock = 300;
-int foxylocationframelock = 300;
+bool consolemode = false;
+char consolemodestr[3] = "OFF";
 
-int toyfreddylocationframelock = 300;
-int toybonnielocationframelock = 300;
-int toychicalocationframelock = 300;
-int manglelocationframelock = 300;
-
-int BBlocationframelock = 300;
-int GFlocationframelock = 300;
-//Everyone at 5 seconds !!!
+int framesforwarning = 0;
+bool FFWwarning = false;
 
 int presetselector = 1;
 int presetselectorlimiterright = 0;
@@ -180,18 +154,25 @@ int presetselectorlimiterleft = 0;
 char presetselectorstr[20];
 int animatronicategorie = 1;
 
-int linesactive = 0;
+int linesdeathframes = 0;
+bool linesdeathactive = false;
+
+bool freeze = false;
+int selectionfreeze = 1;
+int menuselectionmaxfreeze = 0;
+
+bool linesactive = false;
 int linesframes = 0;
 int menuselection = 2;
-int menuselectionmax = 4;
+int menuselectionmax = 3;
 int musicframes = 4431;
 int limitermenuL = 0;
 int limitermenuR = 0;
-int toyslightframe = 0;
+int springtrapmenuframe = 0;
 int springtrapfreakytimes = 0;
 int ranmenu = 128;
 int activatedmenudebug = 0;
-int printnumber = 3;
+int printnumber = 1;
 int FrameCounterlimiterup = 0;
 int FrameCounterlimiterdown = 0;
 int FrameCounterlimit = 0;
@@ -208,9 +189,10 @@ int unlockssubmenu = 0;
 int limiterunlimitedpower = 0;
 int limiterfastnights = 0;
 int limiterradar = 0;
-int fastnights = 0;
-int cheating = 0;
+bool fastnights = false;
+bool cheating = false;
 int savemenu = 0;
+bool menufadingout = false;
 
 int twoplayermode = 0;
 char twoplayermodestr[] = "OFF";
@@ -228,127 +210,114 @@ int limiterpadup = 0;
 int limiterbuttondown = 0;
 int limiterstart = 0;
 
-int freddylocation = 0;
-int freddylocationframe = 300;
-int freddycountdownactivation = 0;
-int freddycountdown = -1;
-int freddydifficulty = 0;
-
-int toyfreddylocation = 0;
-int toyfreddylocationframe = 300;
-int toyfreddycountdownactivation = 0;
-int toyfreddycountdown = -1;
-int toyfreddydifficulty = 0;
-
-int bonnielocation = 2;
-int bonnieliljumpscare = 0;
-int bonnieliljumpscarecooldown = 0;
-int bonnielocationframe = 300;
-int bonniedifficulty = 0;
-int bonnieonetimeskip = 0;
-
-int toybonnielocation = 0;
-int toybonnielocationframe = 300;
-int toybonnieframevent = 30;
-int toybran = 0;
-int toybonniedifficulty = 0;
-int toybonnieonetimeskip = 0;
-
-int chicalocation = 0;
-int chicalocationframe = 300;
-int chicadifficulty = 0;
-int chicaonetimeskip = 0;
-
-int toychicalocation = 0;
-int toychicalocationframe = 300;
-int toychicadifficulty = 0;
-int toychicaonetimeskip = 0;
-int toychicafoolness = 0;
-
-int foxyreadyattack = 0;
-int foxylocation = 1;
-int foxylocationframe = 300;
-int foxydifficulty = 0;
-int foxyalterablevalue = 0;
-int secondframefoxy = 60;
-int secondframefoxymask = 60;
-int halfsecondframefoxy = 30;
-int flashlightcounter = 0;
-int foxysran = 0;
-int foxyattackcounter = 0;
-
-int manglelocation = 0;
-int manglelocationframe = 300;
-int manglefoolness = 240;
-int manglerunningframes = 0;
-int mangledifficulty = 0;
-int manglelocked = 0;
-int manglelockeduration = 16;
-int mangleoxy = 0;
-int manglesknock = 0;
-int mangleknockframe = 0;
-int mangleattack = 0;
-
-int BBdifficulty = 0;
-int BBlocation = 0;
-int BBlocationframe = 300;
-int BBfoolness = 0;
-int BBlol = 0;
-int BBlolonce = 0;
-
-int GFdifficulty = 0;
-int GFlocationframehallway = 60;
-int GFlocationframe = 300;
-int GFactivated = 0;
-int GFnotactivatedyet = 0;
-int GFdeactivating = 0;
-int GFactivatedhallway = 0;
-int GFscreamerhallway = 0;
-int flashedonce = 0;
-
 int onesecondvar = 60; //always one second for some random things (vents)
 
 int nolongerincam = 0;
 
-int puppetdifficulty = 0;
-int puppetlocation = 0;
-int puppetlocationframe = 60;
-int musicangerframe = 0;
-
-int mangleHere = 0;
-int BBHere = 0;
-
-int triggeralarm = 0;
-int alarmcooldown = 30;
-int officefadingout = 0;
+int alarmcooldown = 0;
+int officefadingout = -1;
 int officefadingoutminus = 0;
 int oneway = 0; //NO WAY
 
 int camlimiter = 0;
 int limiterbop = 0;
 
-int camera = 0;
+int inactiveframes = 0; //Used to know how long you've not been using camera/maintenance panel
+bool camera = false;
+bool isonvents = false;
 int cooldowncamera = 0;
-char curcam[2] = "09";
-char curcamname[16] = "Show Stage";
+int curcam[2] = {0,1};
 int limitercameraD = 0;
 int limitercameraU = 0;
 int limitercameraR = 0;
 int limitercameraL = 0;
-int springtraponcam = false;
+bool springtraponcam = false;
+bool abletoplaysound = true;
+int camerahealth = 10;
+int camerahealthtimer = 720;
+int audiodevicehealth = 10;
+int BBsoundcooldown = 0;
+bool audiolureworked = false;
+int timeruntillured = -1;
+int audiolureloc[2] = {0,1};
+int limitertoggle = 0;
+int spritecamerago = false;
+int spritecamera = 0;
+int spritesheetcamera = 4;
+int camerastatic = 100;
+bool camerasystemfailure = false;
+bool camerastate = false;
+bool ventilationfailure = false;
+int frameventilbroke = 0;
+int ventilhealth = 10;
+int ventilhealthtimer = 720;
+int ventilhealthtimerconst = 720;
+bool blackout = false;
 
-int isfreddyofficehere = false;
+bool ballonboydeactivated = false;
+bool ballonboyonscreen = false;
+bool ballonboyqueued = false;
+int ballonboyseen = 51;
+int ballonboyAI = 4;
+int ballonboyframes = 1200;
+
+bool mangledeactivated = false;
+bool mangleonscreen = false;
+bool manglequeued = false;
+int mangleseen = 51;
+int mangleAI = 4;
+int mangleframes = 1200;
+int mangleframesdisappear = 780;
+
+bool puppetdeactivated = false;
+bool puppetonscreen = false;
+bool puppetqueued = false;
+int puppetseen = 51;
+int puppetAI = 5;
+int puppetframes = 1200;
+int puppetframesdisappear = 1000;
+
+bool chicadeactivated = false;
+bool chicaonscreen = false;
+bool ischicaofficehere = false;
+bool chicaqueued = false;
+int chicaseen = 54;
+int chicaAI = 5;
+int chicaframes = 1200;
+
+bool ispuppetofficehere = false; 
+int puppetleaving = 0;
+bool isballonboyofficehere = false;
+bool ismangleofficehere = false;
+
+bool jumpscared = false;
+bool springtrapskip = false; //When jumpscared, singtip will force move ONCE
+
+bool isfreddyofficehere = false;
+bool freddygotu = false;
+int freddyAI = 4;
+int freddyframes = 3600;
+int freddyprogressionframe = 2600; 
+int freddytimeseen = 360;
+bool freddydeactivated = false;
+int UVfreddy = 0;
+
+int isfoxyofficehere = false;
+bool foxyscreamer = false;
+int foxyAI = 4;
+bool foxyseen = false;
+
+bool heavybreathing = false;
 
 bool maintenancepanel = false;
 int maintenancepanelselection = 0;
 int reloadingframe = 0;
 int timerepairing = 0;
+bool currentlyrepairing = false;
 int limiterpanel = 0;
 int spritemaintenancepanelgo = false;
 int spritemaintenancepanel = 0;
 int spritesheetpanel = 4;
-
-int animatronicscamera[] = {0,0,0,0,0,0,0,0,0}; //freddy, bonnie, chica, foxy, toy freddy, toy bonnie, toy chica, mangle, BB
 
 int blinkicon = 0;
 
@@ -357,12 +326,13 @@ int fadeoffice = 128;
 int fadeofficenights = 128;
 int fadeGF = 128;
 int inorout = 0;
-int onetime = 0;
 int oldnight = 0;
+bool donewithaggressive = false;
+bool night5done, night6done = false;
 
-int isingame = 0;
-int returnedingame = 0;
-int notoys = 0;
+bool isingame = false;
+bool returnedingame = false;
+int nospringtrap = 0;
 int returnframes = 0;
 int returnbasevolume = 0x1800;
 
@@ -375,18 +345,64 @@ int framenoisefootstepF = 0;
 
 int fivesecondframe = 300;
 int demisecondframe = 30;
-int ambiancesound = 1;
-int ambiancechance = 1;
+int ambianceframe = 300;
+
+int debugambiancesound = 0;
 
 int mascottune = 0;
 int musicmascottune = 1248;
 
-int enablephoneguy = 1;
+bool lockleft = false; //Used for forcing you to move.
+
+bool springtrapinactive = false; //For recording purpose
+int springtrapAI = 0;
+int springtraplocframe = 360;
+int springtraplocation[2] = {1,0};
+int OLDspringtraplocation[2] = {0,1};
+int springtrapblockcam = 60;
+int movecounter = 0;
+bool isagressive = false;
+int Springstotalturns = 0;
+int SpringsAction = 0;
+int SpringsAction2 = 0;
+int fiveSeconds = 5;
+bool isontherightside = false; //If he's on the right side or not, for jumpscare
+bool comingfromvent = false;
+bool retainspringtrapleaving = false; //Used when player is looking at him when doing a succesful move. Will not move until camera opened up
+int isspringtrapleavingframes = 0; //Since it DOESN'T WANT to run, I'll set a timer
+int imageindexspringtraprun = 0;
+bool isspringtrapvents = false;
+bool currentlysealing = false;
+int ventlocked = 0; //0 is when nothing is locked, if it is the var will match the cam number
+int timertolock = 180; //3 sec
+bool isspringtrapinspecialstage1, isspringtrapinspecialstage2, springtrapinviewrange, springtrapsooninviewrange = false;
+bool isspringtraprunningtoyou = false;
+bool springtrapbehindcamera = false;
+int springtraprunningindex = -1;
+bool springtrapnoise = false; //Pro tip : Spongetoy make noises when moving.
+int stage = 0;
+bool springtraprunningoffice = false;
+bool springtraphide = false;
+bool springtraphidegone = false;
+int springtraphideframe = 0;
+
+int alarmstate = 0; //For the weird sound "alarm" thing
+
+
+int sync= 0;
+
+bool enablephoneguy = false;
 char enablephoneguystr[] = "ON";
 int limiterphoneguy = 0;
 int phoneguytalking = 0;
 int phoneguytalkingconst;
-int mutedcall = 0;
+bool mutedcall = false;
+
+bool noerrors = false;
+char noerrorsstr[] = "OFF";
+
+bool aggressive = false;
+char aggressivestr[] = "OFF";
 
 int isalreadydead = 0;
 int isalreadydeadlow = 0;
@@ -394,17 +410,16 @@ int framedeadpossi = 60;
 int lastsecondsframes = 1800;
 int screamersetsound = 0;
 int screamerframes = 47;
-int deadtoybonnie = 0;
-int dead = 0;
-int deadfrom = 0;
+bool dead = false;
 int spriteframes = 4;
 int spriteframesconst = 4;
 int spritesheet = 0;
 
-int nightwon = 0;
+bool nightwon = false;
 int fivetosixamframes = 0;
 int nextnightframes = 0;
 int staticframessheet = 0;
+int flashingAMframes = 0;
 
 int speedoffice = 3;
 int fanframes = 0;
@@ -431,3 +446,180 @@ char *nextpri = primbuff[0];       // pointer to the next primitive in primbuff.
 
 #define COUNT_OF(x) (sizeof(x) / sizeof(0[x]))
 
+void consoleFunc(void) {
+    maintenancepanel = !maintenancepanel; 
+    spritemaintenancepanelgo = true;
+    if (maintenancepanel) {
+        SpuSetKey(SPU_ON, SPU_19CH);
+    } else {
+        SpuSetKey(SPU_ON, SPU_20CH);
+    }
+}
+void CameraFunc(bool silent) {
+    if (currentlysealing) {return;}
+    if (camlimiter == 0) {
+        if (cooldowncamera == 0) {
+            camera = !camera;
+            if (camera) {
+                if (!camerastate) {spritecamerago = true;}
+                if (!silent) {
+                  SpuSetKey(SPU_OFF, SPU_01CH);
+                  SpuSetKey(SPU_ON, SPU_07CH);
+                }
+                SpuSetKey(SPU_OFF, SPU_00CH);
+            }
+            if (!camera) {
+                if (!silent) {
+                  SpuSetKey(SPU_OFF, SPU_07CH);
+                  SpuSetKey(SPU_ON, SPU_01CH);
+                }
+                SpuSetKey(SPU_OFF, SPU_21CH);
+                if (ballonboyseen > 0) {ballonboyqueued = false;}
+                if (chicaseen > 0) {chicaqueued = false;}
+                if (puppetseen > 0) {puppetqueued = false;}
+                if (mangleseen > 0) {manglequeued = false;}
+            }
+            cooldowncamera = 15;
+        }
+    }
+    camlimiter = 1;
+}
+
+void init(void)
+{   
+    ResetCallback();
+    ResetGraph(0);
+
+    // Initialize and setup the GTE
+    
+    InitGeom();
+    SetGeomOffset(CENTERX,CENTERY);
+    SetGeomScreen(CENTERX);
+
+    SetDefDispEnv(&disp[0], 0, 0         , SCREENXRES, SCREENYRES);     // Set display area for both &disp[0] and &disp[1]
+    SetDefDispEnv(&disp[1], 0, SCREENYRES, SCREENXRES, SCREENYRES);     // &disp[0] is on top  of &disp[1]
+    SetDefDrawEnv(&draw[0], 0, SCREENYRES, SCREENXRES, SCREENYRES);     // Set draw for both &draw[0] and &draw[1]
+    SetDefDrawEnv(&draw[1], 0, 0         , SCREENXRES, SCREENYRES);     // &draw[0] is below &draw[1]
+    // Set video mode
+    if (VMODE){ SetVideoMode(MODE_PAL); disp[0].disp.y = disp[1].disp.y = 8;}
+    SetDispMask(1);                 // Display on screen    
+    setRGB0(&draw[0], 0, 0, 0); // set color for first draw area
+    setRGB0(&draw[1], 0, 0, 0); // set color for second draw area
+    draw[0].isbg = 1;               // set mask for draw areas. 1 means repainting the area with the RGB color each frame 
+    draw[1].isbg = 1;
+    PutDispEnv(&disp[db]);          // set the disp and draw environnments
+    PutDrawEnv(&draw[db]);
+    //FntLoad(FONTX, FONTY);                // Load font to vram at FONTX,FONTY
+    //FntOpen(100, 100, 48, 20, 0, 12 );    // FntOpen(x, y, width, height,  black_bg, max. nbr. chars)
+    //FntColor(fntColor, fntColorBG);
+    FntLoad(960, 0);
+    FntOpen(MARGINX, SCREENYRES - MARGINY - FONTSIZE, SCREENXRES - MARGINX * 2, FONTSIZE, 0, 280 );
+}
+void gamevictory(void) {
+    if (camera) {camera = false;}
+    if (maintenancepanel) {maintenancepanel = false;}
+    SpuSetKey(SPU_OFF, SPU_ALLCH);
+    FrameCounter++;
+}
+//Other files
+
+#include "musics.h"
+#include "objects.h"
+#include "camera.h"
+#include "AI-related.h"
+
+#include "asc2sjis.h"
+#include "memcardthings.h"
+
+void resetgame(int hardreset) {
+  if (debugging == 0) {
+    if (hardreset == 1) {
+
+
+    }
+
+
+
+
+    officefadingout = -1;
+
+    isfreddyofficehere = false;
+  }
+    if (enablephoneguystr[1] == 'N') {enablephoneguy = true;}
+
+    fadeofficenights = 128;
+
+    alarmstate = 0;
+
+    camera = false;
+    curcam[0] = 0;
+    curcam[1] = 1;
+
+    ventilhealth = 10;
+    ventilationfailure = false;
+
+    jumpscared = false;
+
+    ventlocked = 0;
+
+    camerahealth = 10;
+    camerahealthtimer = 720;
+    audiodevicehealth = 10;
+
+    camerasystemfailure = false;
+
+    noisefootstep = 0;
+    framenoisefootstep = 0;
+
+    fivesecondframe = 300;
+    ambianceframe = 300;
+
+    mascottune = 0;
+    musicmascottune = 1248;
+
+    isalreadydead = 0;
+    isalreadydeadlow = 0;
+    framedeadpossi = 60;
+    lastsecondsframes = 1800;
+
+    screamersetsound = 0;
+    screamerframes = 47;
+    spriteframes = 2;
+    spritesheet = 0;
+
+    dead = false;
+    spriteframesconst = 2;
+
+    fadeoffice = 128;
+
+    isonvents = false;
+    LoadTexture(_binary_tim_camera_panel_layout_tim_start, &camlayout);
+
+    nightwon = false;
+    nextnightframes = 0;
+    staticframessheet = 0;
+    flashingAMframes = 0;
+
+    staticframes = 300;
+
+    ventbanging = 0;
+    ventbangingframes = 0;
+
+    AM = 12;
+    FrameCounter = 0;
+
+    isingame = false;
+
+    mutedcall = false;
+
+    stage = 0;
+    springtraprunningoffice = false;
+    isspringtrapinspecialstage1, isspringtrapinspecialstage2, springtrapinviewrange, springtrapsooninviewrange = false;
+    isspringtraprunningtoyou = false;
+    springtraprunningindex = -1;
+    springtrapnoise = false; //Pro tip : Spongetoy make noises when moving.
+
+    puppetqueued, ballonboyqueued, manglequeued, isfoxyofficehere, chicaqueued = false;
+}
+
+#include "menu.h"

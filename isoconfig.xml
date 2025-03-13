@@ -97,35 +97,33 @@
             <file name="STATIC.TIM"   type="data" source="tim/titlemenu/STATIC.TIM"/>
             <file name="HWANTED.TIM"   type="data" source="tim/titlemenu/HWANTED.TIM"/>     
 
-            <file name="FAM.TIM"   type="data" source="tim/5am6/FAM.TIM"/>
-
             <file name="2NDLYR.TIM"   type="data" source="tim/office/2NDLAYER.TIM"/>
             <file name="2NDLYR2.TIM"   type="data" source="tim/office/2NDLAYER2.TIM"/>
             <file name="OFFICE.TIM"   type="data" source="tim/office/OFFICE.TIM"/>
             <file name="LAYOUT.TIM"   type="data" source="tim/office/LAYOUT.TIM"/>
+            
+            <file name="BBREAL.TIM"   type="data" source="tim/office/animatronics/BBREAL.TIM"/>
+            
+            <file name="PUPPET.TIM"   type="data" source="tim/office/animatronics/PUPPET.TIM"/>
 
-            <file name="CAM-01.TIM"   type="data" source="tim/camera/cams/map/01/CAM.TIM"/>
+            <file name="CAM0102.TIM"   type="data" source="tim/camera/cams/map/0102/CAM.TIM"/>
 
-            <file name="CAM-02.TIM"   type="data" source="tim/camera/cams/map/02/CAM.TIM"/>
+            <file name="CAM0304.TIM"   type="data" source="tim/camera/cams/map/0304/CAM.TIM"/>
 
-            <file name="CAM-03.TIM"   type="data" source="tim/camera/cams/map/03/CAM.TIM"/>
+            <file name="CAM0506.TIM"   type="data" source="tim/camera/cams/map/0506/CAM.TIM"/>
 
-            <file name="CAM-04.TIM"   type="data" source="tim/camera/cams/map/04/CAM.TIM"/>
+            <file name="CAM0708.TIM"   type="data" source="tim/camera/cams/map/0708/CAM.TIM"/>
 
-            <file name="CAM-05.TIM"   type="data" source="tim/camera/cams/map/05/CAM.TIM"/>
+            <file name="CAM0910.TIM"   type="data" source="tim/camera/cams/map/0910/CAM.TIM"/>
 
-            <file name="CAM-06.TIM"   type="data" source="tim/camera/cams/map/06/CAM.TIM"/>
+            <file name="CAM1112.TIM"   type="data" source="tim/camera/cams/vents/1112/CAM.TIM"/>
 
-            <file name="CAM-07.TIM"   type="data" source="tim/camera/cams/map/07/CAM.TIM"/>
+            <file name="CAM1314.TIM"   type="data" source="tim/camera/cams/vents/1314/CAM.TIM"/>
 
-            <file name="CAM-08.TIM"   type="data" source="tim/camera/cams/map/08/CAM.TIM"/>
+            <!-- Every cams expect cam 15, since it's not pair it only uses 8kb -->
 
-            <file name="CAM-09.TIM"   type="data" source="tim/camera/cams/map/09/CAM.TIM"/>
+            <file name="FOXY.TIM"   type="data" source="tim/office/FOXY.TIM"/>
 
-            <file name="CAM-10.TIM"   type="data" source="tim/camera/cams/map/10/CAM.TIM"/>
-
-
-            <file name="GJFIV.TIM"   type="data" source="tim/GJFIV.TIM"/>
             <file name="LOAD.TIM"   type="data" source="tim/LOAD.TIM"/>
             <file name="GAMEOVER.TIM"   type="data" source="tim/GAMEOVER.TIM"/>
 
