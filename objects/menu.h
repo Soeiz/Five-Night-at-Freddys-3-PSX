@@ -332,7 +332,7 @@ void menuPrint(void) {
                 case 2:
                     FntPrint("   Five Night at Freddy's 3 has been \n   released by Scott Cawton on 2015,\n  and has been ported on PS1 by Soeiz.\n\n        Again, Thank you, Scott, \n      For releasing this beautiful\n              Masterpiece.\n\n");
 
-                    FntPrint(">> Back                 EARLY V.1.0\n"); //Don't even need to do condition, there's only one
+                    FntPrint(">> Back                       V.1.0\n"); //Don't even need to do condition, there's only one
                 break;
             }
         break;

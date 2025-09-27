@@ -204,7 +204,7 @@ VAGsound vagsoundBank[VAG_NBR] = {
      { &_binary_vag_puppet_vag_start,
         SPU_23CH, 0 },
 };
-/*
+
 // soundBank
 VAGsound vagsoundBank2[VAG_NBR] = {
       { &_binary_vag_sealingvent_vag_start,
@@ -239,7 +239,7 @@ VAGsound vagsoundBank2[VAG_NBR] = {
         SPU_09CH, 0 },
       { &_binary_vag_BB3_vag_start,
         SPU_08CH, 0 },
-      { &_binary_vag_clickfail_vag_start,
+      { &_binary_vag_ventquiet_vag_start,
         SPU_07CH, 0 },
       { &_binary_vag_monitor_up_2_vag_start,
         SPU_06CH, 0 },
@@ -255,7 +255,7 @@ VAGsound vagsoundBank2[VAG_NBR] = {
         SPU_01CH, 0 }, 
      { &_binary_vag_puppet_vag_start,
         SPU_00CH, 0 },
-};*/
+};
 
 // XA
 // SPU attributes

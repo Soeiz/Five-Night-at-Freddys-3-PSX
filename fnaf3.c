@@ -61,13 +61,13 @@ void print(int number) {
         FntPrint("\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n");  // For the text to go bottom LOL
 
         //FntPrint("%d AM \n, pos %d, pPos %d\n", AM, MovVectorofficemiddle.vx, MovVectorpuppet.vx);  // print time
-        FntPrint("%d AM\n", ScaleVectorofficemiddle.vx);  // print time
+        FntPrint("%d AM\n", AM);  // print time
         FntPrint("Night %d \n", night);
     }
     if (number == 2) { // Better debug mode
         FntPrint("%d AM,RAN %d,pos %d,CamS. %d\n",AM, RAN,MovVectorofficemiddle.vx,camerastatic, demisecondframe, fivesecondframe);
         FntPrint("Phoneguy %d,BB. %d,%d,%d,ambS. %d, CCS %d\n", phoneguytalking, ballonboyqueued, ballonboyseen,puppetframesdisappear, ambianceframe, chicaseen);
-        FntPrint("Aud.H %d, Cam.H %d + T. %d, V.H %d + T. %d", audiodevicehealth, camerahealth, camerahealthtimer, ventilhealth, ventilhealthtimer);
+        FntPrint("Aud.H %d, Cam.H %d + T. %d, V.H %d + T. %d", audiodevicehealth, camerahealth, frameventilbroke, ventilhealth, ventilhealthtimer);
     }
 }
 

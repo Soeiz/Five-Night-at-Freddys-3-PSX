@@ -445,7 +445,7 @@ void AIact(void) {
         chicaseen = 54;
     } //Because else it's unfair
 
-    if (ballonboyseen < 1 && (chicaqueued == false && curcam[1] == 7)) {
+    if (ballonboyseen < 1 && (chicaqueued == false)) {
         isballonboyofficehere = true;
         jumpscared = true;
         ballonboyqueued = false;
@@ -1282,5 +1282,7 @@ void timeFunc(void) {
 
     if (ventilationfailure && officefadingout != 1) {frameventilbroke++;} else {frameventilbroke = 0;}
 
-    if (frameventilbroke == 780) {officefadingout = 0;}
+    if (frameventilbroke > 300) {officefadingout = 0;}
+
+    if (frameventilbroke > 780) {officefadingout = 1;}
 }
